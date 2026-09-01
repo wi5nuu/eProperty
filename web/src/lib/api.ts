@@ -18,8 +18,16 @@ api.interceptors.request.use((config) => {
 })
 
 api.interceptors.response.use(
-  (res) => res,
+  (res) => {
+    if (import.meta.env.DEV) {
+      console.log(`[API Response] ${res.config.method?.toUpperCase()} ${res.config.url} - ${res.status}`)
+    }
+    return res
+  },
   (err) => {
+    if (import.meta.env.DEV) {
+      console.error(`[API Error] ${err.config?.method?.toUpperCase()} ${err.config?.url} - ${err.response?.status || 'Network Error'}`)
+    }
     if (err.response?.status === 401) {
       useAuthStore.getState().logout()
       window.location.href = '/login'
