@@ -43,5 +43,21 @@ class AuthController extends Controller
     {
         return response()->json(['data' => $request->attributes->get('token_claims')]);
     }
+
+    public function logout(Request $request): JsonResponse
+    {
+        $claims = $request->attributes->get('token_claims');
+        
+        if ($claims && isset($claims['sub'])) {
+            DB::transaction(fn () => DomainEvent::record(
+                'identity.user.logged_out',
+                'user',
+                (string) $claims['sub'],
+                ['email' => $claims['email'] ?? null, 'ip' => (string) $request->ip()],
+            ));
+        }
+
+        return response()->json(['message' => 'Berhasil logout']);
+    }
 }
 
