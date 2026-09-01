@@ -34,6 +34,22 @@ class DatabaseSeeder extends Seeder
             'suppliers.create' => 'Membuat supplier',
             'suppliers.update' => 'Memperbarui supplier',
             'suppliers.delete' => 'Menghapus supplier',
+            'properties.read' => 'Melihat properti',
+            'properties.create' => 'Membuat properti',
+            'properties.update' => 'Memperbarui properti',
+            'properties.delete' => 'Menghapus properti',
+            'tenants.read' => 'Melihat penyewa',
+            'tenants.create' => 'Membuat penyewa',
+            'tenants.update' => 'Memperbarui penyewa',
+            'tenants.delete' => 'Menghapus penyewa',
+            'invoices.read' => 'Melihat invoice',
+            'invoices.create' => 'Membuat invoice',
+            'invoices.update' => 'Memperbarui invoice',
+            'invoices.delete' => 'Menghapus invoice',
+            'meters.read' => 'Melihat meter',
+            'meters.create' => 'Membuat pembacaan meter',
+            'meters.update' => 'Memperbarui pembacaan meter',
+            'meters.delete' => 'Menghapus pembacaan meter',
         ])->map(fn (string $name, string $code) => Permission::firstOrCreate(['code' => $code], ['name' => $name]));
 
         $adminRole = Role::firstOrCreate(['code' => 'administrator'], ['name' => 'Administrator']);
