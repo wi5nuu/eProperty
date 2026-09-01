@@ -74,7 +74,7 @@ class MeterReadingController extends Controller
         $validated = $request->validate([
             'reading_date'      => 'sometimes|required|date',
             'previous_reading'  => 'sometimes|required|numeric|min:0',
-            'current_reading'   => 'sometimes|required|numeric|min:0',
+            'current_reading'   => 'sometimes|required|numeric|min:0|gte:previous_reading',
             'notes'             => 'nullable|string',
             'status'            => 'nullable|string|in:pending,confirmed,disputed',
         ]);
