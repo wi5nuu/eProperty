@@ -1,32 +1,143 @@
-# Arsitektur awal
+# eProperty ERP System - Architecture Overview
 
-## Keputusan fondasi
+## System Architecture
 
-- **Runtime:** Laravel 12, PHP 8.2 (versi PHP lokal yang tersedia). Naikkan ke PHP 8.3 sebelum production agar dapat memakai Laravel 13 bila seluruh dependency telah lulus pengujian.
-- **Deployment:** satu container per service; setiap service dapat restart dan deploy sendiri.
-- **Data:** PostgreSQL, satu database per service. Tidak ada foreign key lintas database dan tidak ada query langsung ke database service lain.
-- **Gateway:** Nginx sebagai edge gateway. Ia menerapkan timeout 2/10 detik, satu percobaan upstream, dan passive circuit breaking (`max_fails`/`fail_timeout`). Circuit breaker aktif di pemanggil service ditambahkan saat service mulai melakukan HTTP call.
-- **Identitas:** `identity-service` menerbitkan JWT berumur pendek berisi user, role, dan permission. Service bisnis memverifikasi tanda tangan JWT secara lokal; request normal tidak membuat service bisnis tergantung pada availability identity-service.
-- **Asinkron:** RabbitMQ adalah transport event. Gunakan transactional outbox per service: perubahan bisnis dan record outbox ditulis dalam satu transaksi lokal, publisher menerbitkan event, lalu consumer melakukan deduplikasi memakai `event_id`.
+### Microservices Architecture
+```
+┌─────────────┐
+│   Nginx     │ (Reverse Proxy & Load Balancer)
+└──────┬──────┘
+       │
+       ├──────────┬──────────┬──────────┬──────────┬──────────┐
+       ↓          ↓          ↓          ↓          ↓          ↓
+   Identity  Customer  Employee Contractor Supplier  Meter
+   Service   Service   Service   Service   Service  Reading
+   :8001     :8002     :8003     :8004     :8005    :8006
+       │          │          │          │          │          │
+       └──────────┴──────────┴──────────┴──────────┴──────────┘
+                              ↓
+                    ┌──────────────────┐
+                    │   PostgreSQL     │ (Separate DB per service)
+                    └──────────────────┘
+                              ↓
+                    ┌──────────────────┐
+                    │      Redis       │ (Caching & Sessions)
+                    └──────────────────┘
+```
 
-## Konsistensi finansial
+### Frontend Architecture
+```
+React 19 + TypeScript
+├── Components (Reusable UI)
+├── Pages (Route Components)
+├── Services (API Clients)
+├── Store (Zustand State Management)
+├── Hooks (Custom React Hooks)
+└── Utils (Helper Functions)
+```
 
-Jangan memakai two-phase commit atau transaksi database lintas service. Purchasing menyimpan perubahan lokal serta event `PurchaseOrderApproved` melalui outbox. Finance service mengonsumsi event secara idempoten dan membuat posting journal dengan `source_event_id` unik. Bila posting gagal, workflow masuk status `posting_pending` dan diretry; pembatalan dibuat sebagai jurnal pembalik, bukan menghapus jurnal yang telah diposting. Ini adalah saga orkestrasi berbasis event dengan audit trail immutable.
+## Technology Stack
 
-## Batas service target
+### Backend
+- **Framework**: Laravel 11
+- **Language**: PHP 8.2
+- **Database**: PostgreSQL 16
+- **Cache**: Redis 7
+- **Authentication**: JWT
+- **Testing**: PHPUnit
 
-| Bounded context | Database pemilik | Integrasi utama |
-| --- | --- | --- |
-| Identity & Security | identity_db | JWT, role/permission |
-| Finance (GL, AR, AP, Cash Book, Fixed Asset, Budget, COGS) | finance_db | Event transaksi; jurnal immutable |
-| Customer | customer_db | Referensi customer via ID/API |
-| Supplier | supplier_db | Referensi supplier via ID/API |
-| Purchasing | purchasing_db | Saga ke Finance, Inventory, Supplier |
-| Inventory | inventory_db | Event receipt/issue/valuation |
-| Estate Management | estate_db | Event property/unit/tenant |
-| Contractor Management | contractor_db | API contractor/project |
-| Employee Center | employee_db | API pegawai |
-| Reporting / Print | reporting_db atau object storage | Read model dari event; bukan sumber data bisnis |
+### Frontend
+- **Framework**: React 19
+- **Language**: TypeScript 5.7
+- **Build Tool**: Vite 8
+- **Styling**: TailwindCSS 4
+- **State**: Zustand 5
+- **Routing**: React Router 7
+- **HTTP Client**: Axios 1.7
+- **Testing**: Vitest 2
 
-`Print-Out` bukan business service transaksional; jadikan reporting/rendering service yang hanya membaca projection atau snapshot yang dikirim event.
+### Infrastructure
+- **Containers**: Docker + Docker Compose
+- **Proxy**: Nginx
+- **CI/CD**: GitHub Actions
+- **Monitoring**: Laravel Telescope
 
+## Service Responsibilities
+
+### Identity Service (Port 8001)
+- User authentication
+- Authorization & permissions
+- Role management
+- JWT token issuance
+
+### Customer Service (Port 8002)
+- Customer CRUD operations
+- Customer relationships
+- Customer history
+
+### Employee Service (Port 8003)
+- Employee management
+- Attendance tracking
+- Payroll data
+
+### Contractor Service (Port 8004)
+- Contractor management
+- Contract tracking
+- Payment records
+
+### Supplier Service (Port 8005)
+- Supplier management
+- Purchase orders
+- Supplier invoices
+
+### Meter Reading Service (Port 8006)
+- Meter readings CRUD
+- Consumption calculation
+- Photo evidence storage
+- Reading history
+
+### Realtime Gateway (Port 8080)
+- WebSocket connections
+- Real-time notifications
+- Live updates
+
+## Data Flow
+
+### Authentication Flow
+1. User submits credentials to Identity Service
+2. Identity Service validates and issues JWT
+3. Frontend stores JWT in localStorage
+4. Subsequent requests include JWT in Authorization header
+5. Each service validates JWT independently
+
+### API Request Flow
+1. Frontend makes request through Axios
+2. Nginx routes to appropriate service
+3. Service validates JWT
+4. Service processes request
+5. Response returned to frontend
+
+## Security
+
+- JWT-based authentication
+- CORS configuration
+- Rate limiting per endpoint
+- Input validation with Zod
+- SQL injection prevention (Eloquent ORM)
+- XSS prevention (React escaping)
+- CSRF tokens for forms
+
+## Scalability
+
+- Horizontal scaling per service
+- Database per service (no shared database)
+- Redis for distributed caching
+- Stateless services
+- Load balancing via Nginx
+
+## Deployment
+
+- Development: docker-compose.yml
+- Production: docker-compose.production.yml
+- Orchestration: Kubernetes ready
+- CI/CD: GitHub Actions
