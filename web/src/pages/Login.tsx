@@ -17,8 +17,12 @@ export default function Login() {
     e.preventDefault()
     setLoading(true)
     try {
-      const { data } = await api.post('/identity/auth/login', { email, password })
-      setAuth(data.access_token, { id: 0, name: email.split('@')[0], email, role: 'admin' })
+      const { data: authData } = await api.post('/identity/auth/login', { email, password })
+      // Set token temporarily to make authenticated request
+      api.defaults.headers.common['Authorization'] = `Bearer ${authData.access_token}`
+      // Fetch user data from /me endpoint
+      const { data: userData } = await api.get('/identity/auth/me')
+      setAuth(authData.access_token, userData.data)
       toast.success('Login berhasil')
       navigate('/')
     } catch {
