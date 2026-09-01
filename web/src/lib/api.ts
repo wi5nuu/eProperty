@@ -11,6 +11,9 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  if (import.meta.env.DEV) {
+    console.log(`[API Request] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`)
+  }
   return config
 })
 
