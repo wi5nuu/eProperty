@@ -1,0 +1,51 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  frontend-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Install dependencies
+        working-directory: ./web
+        run: npm ci
+      - name: Run tests
+        working-directory: ./web
+        run: npm test
+      - name: Run build
+        working-directory: ./web
+        run: npm run build
+
+  backend-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        service: [identity-service, customer-service, employee-service, contractor-service, supplier-service, meter-reading-service]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+      - name: Install dependencies
+        working-directory: ./services/${{ matrix.service }}
+        run: composer install
+      - name: Run tests
+        working-directory: ./services/${{ matrix.service }}
+        run: php artisan test
+
+  deploy:
+    needs: [frontend-test, backend-test]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy to production
+        run: ./scripts/deploy-production.sh
