@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>eProperty · Operations</title>
+  <style>
+    :root { color-scheme: light; --ink:#102a43; --muted:#627d98; --line:#d9e2ec; --bg:#f5f7fa; --brand:#0b7285; --brand-dark:#075866; --danger:#b42318; --card:#fff; }
+    * { box-sizing:border-box; }
+    body { margin:0; font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif; background:var(--bg); color:var(--ink); }
+    .app { max-width:1180px; margin:auto; padding:28px 20px 48px; }
+    .top { display:flex; justify-content:space-between; align-items:center; gap:20px; margin-bottom:24px; }
+    h1 { font-size:24px; margin:0; letter-spacing:-.02em; } h2 { font-size:17px; margin:0 0 16px; }
+    .sub { color:var(--muted); margin:3px 0 0; } .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:20px; box-shadow:0 1px 2px rgba(16,42,67,.04); }
+    .grid { display:grid; grid-template-columns:1fr 1.7fr; gap:20px; } .stats { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:20px; }
+    .stat { padding:14px; border:1px solid var(--line); background:#fff; border-radius:10px; } .stat strong { display:block; font-size:22px; } .stat span { color:var(--muted); font-size:12px; }
+    label { display:block; color:#334e68; font-weight:600; margin:0 0 5px; } input, select { width:100%; border:1px solid #bcccdc; padding:9px 10px; border-radius:8px; font:inherit; background:white; }
+    .fields { display:grid; gap:12px; } .two { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    button { border:0; border-radius:8px; padding:9px 13px; cursor:pointer; font:600 14px inherit; background:var(--brand); color:#fff; } button:hover { background:var(--brand-dark); } button.secondary { background:#e6f6f8; color:var(--brand-dark); } button.danger { color:var(--danger); background:#fff0ef; }
+    .toolbar { display:flex; gap:10px; align-items:center; justify-content:space-between; margin-bottom:12px; } .live { color:var(--muted); font-size:12px; } .dot { width:9px; height:9px; display:inline-block; background:#98a9ba; border-radius:999px; margin-right:5px; } .dot.ok { background:#12b886; box-shadow:0 0 0 3px #d3f9d8; }
+    table { border-collapse:collapse; width:100%; } th,td { text-align:left; padding:11px 8px; border-bottom:1px solid #edf2f7; } th { color:var(--muted); font-size:12px; } td:last-child { text-align:right; } .empty { color:var(--muted); text-align:center; padding:35px; }
+    .hidden { display:none!important; } .notice { margin:0 0 16px; padding:10px 12px; border-radius:8px; background:#e6f6f8; color:#075866; } .notice.error { background:#fff0ef; color:#b42318; }
+    .login { width:min(420px,100%); margin:9vh auto; } .login .card { padding:28px; } .login h1 { margin-bottom:5px; }
+    @media(max-width:780px){ .grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr}.two{grid-template-columns:1fr}.top{align-items:flex-start;flex-direction:column} table th:nth-child(3),table td:nth-child(3),table th:nth-child(4),table td:nth-child(4){display:none} }
+  </style>
+</head>
+<body>
+  <main id="login-view" class="login">
+    <section class="card">
+      <h1>eProperty Operations</h1>
+      <p class="sub">Masuk untuk mengelola Employee Center.</p>
+      <div id="login-notice" class="notice hidden"></div>
+      <form id="login-form" class="fields">
+        <div><label for="email">Email</label><input id="email" name="email" type="email" value="admin@eproperty.local" required></div>
+        <div><label for="password">Password</label><input id="password" name="password" type="password" value="ChangeMe123!" required></div>
+        <button type="submit">Masuk</button>
+      </form>
+      <p class="sub" style="font-size:12px;margin-top:16px">Kredensial ini hanya untuk lingkungan lokal. Ganti sebelum deployment.</p>
+    </section>
+  </main>
+
+  <main id="app-view" class="app hidden">
+    <header class="top">
+      <div><h1>eProperty Operations</h1><p class="sub">Employee Center · pembaruan realtime via WebSocket</p></div>
+      <button id="logout" class="secondary">Keluar</button>
+    </header>
+    <div id="notice" class="notice hidden"></div>
+    <section class="stats">
+      <div class="stat"><strong id="employee-count">–</strong><span>Total pegawai</span></div>
+      <div class="stat"><strong id="identity-status"><i class="dot"></i>Memeriksa</strong><span>Identity service</span></div>
+      <div class="stat"><strong id="employee-status"><i class="dot"></i>Memeriksa</strong><span>Employee service</span></div>
+    </section>
+    <section class="grid">
+      <form id="employee-form" class="card fields">
+        <h2>Tambah pegawai</h2>
+        <div><label for="employee_number">Nomor pegawai</label><input id="employee_number" name="employee_number" placeholder="EMP-001" required></div>
+        <div><label for="full_name">Nama lengkap</label><input id="full_name" name="full_name" placeholder="Nama pegawai" required></div>
+        <div class="two">
+          <div><label for="department">Departemen</label><input id="department" name="department" placeholder="Operations"></div>
+          <div><label for="position">Jabatan</label><input id="position" name="position" placeholder="Manager"></div>
+        </div>
+        <div class="two">
+          <div><label for="employee_email">Email</label><input id="employee_email" name="email" type="email" placeholder="nama@perusahaan.com"></div>
+          <div><label for="hired_on">Tanggal masuk</label><input id="hired_on" name="hired_on" type="date"></div>
+        </div>
+        <input name="employment_status" value="active" type="hidden">
+        <button type="submit">Simpan pegawai</button>
+      </form>
+      <section class="card">
+        <div class="toolbar"><h2>Daftar pegawai</h2><span class="live"><i id="live-dot" class="dot"></i><span id="last-updated">menunggu data</span></span></div>
+        <div style="overflow:auto"><table><thead><tr><th>No.</th><th>Nama</th><th>Departemen</th><th>Status</th><th></th></tr></thead><tbody id="employee-rows"><tr><td colspan="5" class="empty">Memuat data…</td></tr></tbody></table></div>
+      </section>
+    </section>
+  </main>
+
+  <script>
+    const base = '/api/v1'; let ws; let wsRetry; let timer; let busy = false;
+    const token = () => sessionStorage.getItem('eproperty_token');
+    const headers = () => ({ 'Content-Type':'application/json', 'Authorization':`Bearer ${token()}` });
+    const show = (id, message, error=false) => { const el=document.getElementById(id); el.textContent=message; el.className=`notice${error?' error':''}`; el.classList.remove('hidden'); setTimeout(()=>el.classList.add('hidden'),5000); };
+    const serviceStatus = async (url, target) => { try { const res=await fetch(url); if(!res.ok) throw new Error(); document.getElementById(target).innerHTML='<i class="dot ok"></i>Online'; return true; } catch { document.getElementById(target).innerHTML='<i class="dot"></i>Offline'; return false; } };
+    const escape = value => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+    async function loadEmployees(){
+      if(!token() || busy) return; busy=true;
+      try {
+        await Promise.all([serviceStatus(`${base}/identity/health`,'identity-status'), serviceStatus(`${base}/employees/health`,'employee-status')]);
+        const res=await fetch(`${base}/employees`, {headers:headers()});
+        if(res.status===401){ logout(); return; } if(!res.ok) throw new Error('Data pegawai tidak dapat dimuat');
+        const page=(await res.json()).data; const rows=page.data || [];
+        document.getElementById('employee-count').textContent=page.total;
+        document.getElementById('employee-rows').innerHTML=rows.length ? rows.map(e=>`<tr><td>${escape(e.employee_number)}</td><td>${escape(e.full_name)}</td><td>${escape(e.department||'—')}</td><td>${escape(e.employment_status)}</td><td><button class="danger" onclick="removeEmployee(${e.id}, '${escape(e.full_name).replace(/'/g,"\\'")}')">Hapus</button></td></tr>`).join('') : '<tr><td colspan="5" class="empty">Belum ada data pegawai.</td></tr>';
+        document.getElementById('live-dot').classList.add('ok'); document.getElementById('last-updated').textContent=`diperbarui ${new Date().toLocaleTimeString('id-ID')}`;
+      } catch(err) { document.getElementById('live-dot').classList.remove('ok'); document.getElementById('last-updated').textContent='gagal memperbarui'; }
+      finally { busy=false; }
+    }
+    async function removeEmployee(id,name){ if(!confirm(`Hapus ${name}?`)) return; const res=await fetch(`${base}/employees/${id}`,{method:'DELETE',headers:headers()}); if(res.ok){show('notice','Pegawai dihapus.');loadEmployees();} else show('notice','Pegawai gagal dihapus.',true); }
+    function logout(){ sessionStorage.removeItem('eproperty_token'); clearInterval(timer); clearTimeout(wsRetry); if(ws){ ws.onclose=null; ws.close(); ws=null; } document.getElementById('app-view').classList.add('hidden'); document.getElementById('login-view').classList.remove('hidden'); }
+    document.getElementById('logout').onclick=logout;
+    function connectRealtime(){
+      if(!token()) return;
+      clearTimeout(wsRetry);
+      const proto=location.protocol==='https:'?'wss':'ws';
+      try { ws=new WebSocket(`${proto}://${location.host}/ws?token=${encodeURIComponent(token())}`); } catch { timer=setInterval(loadEmployees,15000); return; }
+      ws.onopen=()=>{ document.getElementById('live-dot').classList.add('ok'); };
+      ws.onmessage=event=>{
+        let envelope; try { envelope=JSON.parse(event.data); } catch { return; }
+        if(envelope.event_type==='realtime.connected') return;
+        document.getElementById('last-updated').textContent=`event ${envelope.event_type} · ${new Date(envelope.occurred_at||Date.now()).toLocaleTimeString('id-ID')}`;
+        if(String(envelope.event_type||'').startsWith('employee.')) loadEmployees();
+      };
+      ws.onclose=()=>{ document.getElementById('live-dot').classList.remove('ok'); ws=null; timer=setInterval(loadEmployees,15000); wsRetry=setTimeout(()=>{ clearInterval(timer); timer=undefined; connectRealtime(); },3000); };
+      ws.onerror=()=>{ try { ws&&ws.close(); } catch {} };
+    }
+    document.getElementById('login-form').onsubmit=async event=>{ event.preventDefault(); const form=new FormData(event.target); try { const res=await fetch(`${base}/identity/auth/login`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(Object.fromEntries(form))}); const data=await res.json(); if(!res.ok) throw new Error(data.message||'Login gagal'); sessionStorage.setItem('eproperty_token',data.access_token); document.getElementById('login-view').classList.add('hidden'); document.getElementById('app-view').classList.remove('hidden'); loadEmployees(); connectRealtime(); } catch(err){ show('login-notice',err.message,true); } };
+    document.getElementById('employee-form').onsubmit=async event=>{ event.preventDefault(); const payload=Object.fromEntries(new FormData(event.target)); Object.keys(payload).forEach(key=>{if(payload[key]==='') delete payload[key]}); const res=await fetch(`${base}/employees`,{method:'POST',headers:headers(),body:JSON.stringify(payload)}); const data=await res.json(); if(res.ok){event.target.reset();show('notice',`Pegawai ${data.data.full_name} tersimpan.`);loadEmployees();}else show('notice',Object.values(data.errors||{message:data.message||'Penyimpanan gagal'}).flat().join(' '),true); };
+    if(token()){ document.getElementById('login-view').classList.add('hidden'); document.getElementById('app-view').classList.remove('hidden'); loadEmployees(); connectRealtime(); }
+  </script>
+</body>
+</html>

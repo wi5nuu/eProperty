@@ -1,0 +1,18 @@
+{
+  "name": "eproperty-realtime-gateway",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Konsumer RabbitMQ yang meneruskan event domain eProperty ke browser melalui WebSocket",
+  "main": "server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "amqplib": "^0.10.9",
+    "jsonwebtoken": "^9.0.2",
+    "ws": "^8.18.3"
+  }
+}

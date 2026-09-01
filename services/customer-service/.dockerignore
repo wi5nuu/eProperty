@@ -1,0 +1,6 @@
+.env
+node_modules
+bootstrap/cache/*.php
+storage/logs
+database/*.sqlite
+

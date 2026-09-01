@@ -1,0 +1,14 @@
+.env
+.env.*
+!.env.example
+.idea/
+.vscode/
+**/vendor/
+**/node_modules/
+**/storage/logs/*
+!**/storage/logs/.gitignore
+**/storage/framework/views/*
+!**/storage/framework/views/.gitignore
+**/bootstrap/cache/*.php
+**/database/*.sqlite
+web/dist/

@@ -1,0 +1,334 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      IDENTITY_DB: ${IDENTITY_DB:-identity_db}
+      EMPLOYEE_DB: ${EMPLOYEE_DB:-employee_db}
+      CONTRACTOR_DB: ${CONTRACTOR_DB:-contractor_db}
+      CUSTOMER_DB: ${CUSTOMER_DB:-customer_db}
+      SUPPLIER_DB: ${SUPPLIER_DB:-supplier_db}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infrastructure/postgres/init-databases.sh:/docker-entrypoint-initdb.d/init-databases.sh:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [private]
+
+  rabbitmq:
+    image: rabbitmq:4-alpine
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks: [private]
+
+  identity-service:
+    build: ./services/identity-service
+    restart: unless-stopped
+    environment: &identity-env
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${IDENTITY_APP_KEY}
+      APP_URL: https://${DOMAIN}
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${IDENTITY_DB:-identity_db}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: eproperty-identity
+      JWT_AUDIENCE: eproperty-services
+      JWT_TTL_MINUTES: ${JWT_TTL_MINUTES:-15}
+      INITIAL_ADMIN_EMAIL: ${INITIAL_ADMIN_EMAIL}
+      INITIAL_ADMIN_PASSWORD: ${INITIAL_ADMIN_PASSWORD}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit((int) !@file_get_contents('http://127.0.0.1:8000/up'));\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks: [private]
+
+  identity-outbox:
+    build: ./services/identity-service
+    restart: unless-stopped
+    environment: *identity-env
+    command: php artisan outbox:publish --watch
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks: [private]
+
+  employee-service:
+    build: ./services/employee-service
+    restart: unless-stopped
+    environment: &employee-env
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${EMPLOYEE_APP_KEY}
+      APP_URL: https://${DOMAIN}
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${EMPLOYEE_DB:-employee_db}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: eproperty-identity
+      JWT_AUDIENCE: eproperty-services
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit((int) !@file_get_contents('http://127.0.0.1:8000/up'));\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks: [private]
+
+  employee-outbox:
+    build: ./services/employee-service
+    restart: unless-stopped
+    environment: *employee-env
+    command: php artisan outbox:publish --watch
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks: [private]
+
+  contractor-service:
+    build: ./services/contractor-service
+    restart: unless-stopped
+    environment: &contractor-env
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${CONTRACTOR_APP_KEY}
+      APP_URL: https://${DOMAIN}
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${CONTRACTOR_DB:-contractor_db}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: eproperty-identity
+      JWT_AUDIENCE: eproperty-services
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit((int) !@file_get_contents('http://127.0.0.1:8000/up'));\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks: [private]
+
+  contractor-outbox:
+    build: ./services/contractor-service
+    restart: unless-stopped
+    environment: *contractor-env
+    command: php artisan outbox:publish --watch
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks: [private]
+
+  customer-service:
+    build: ./services/customer-service
+    restart: unless-stopped
+    environment: &customer-env
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${CUSTOMER_APP_KEY}
+      APP_URL: https://${DOMAIN}
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${CUSTOMER_DB:-customer_db}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: eproperty-identity
+      JWT_AUDIENCE: eproperty-services
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit((int) !@file_get_contents('http://127.0.0.1:8000/up'));\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks: [private]
+
+  customer-outbox:
+    build: ./services/customer-service
+    restart: unless-stopped
+    environment: *customer-env
+    command: php artisan outbox:publish --watch
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks: [private]
+
+  supplier-service:
+    build: ./services/supplier-service
+    restart: unless-stopped
+    environment: &supplier-env
+      APP_ENV: production
+      APP_DEBUG: "false"
+      APP_KEY: ${SUPPLIER_APP_KEY}
+      APP_URL: https://${DOMAIN}
+      LOG_CHANNEL: stderr
+      DB_CONNECTION: pgsql
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${SUPPLIER_DB:-supplier_db}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: eproperty-identity
+      JWT_AUDIENCE: eproperty-services
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit((int) !@file_get_contents('http://127.0.0.1:8000/up'));\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks: [private]
+
+  supplier-outbox:
+    build: ./services/supplier-service
+    restart: unless-stopped
+    environment: *supplier-env
+    command: php artisan outbox:publish --watch
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks: [private]
+
+  realtime-gateway:
+    build: ./services/realtime-gateway
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      RABBITMQ_URL: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/%2F
+      EVENT_EXCHANGE: ${EVENT_EXCHANGE:-eproperty.events}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_ISSUER: eproperty-identity
+      JWT_AUDIENCE: eproperty-services
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3000/health >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks: [private]
+
+  gateway:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    volumes:
+      - ./infrastructure/gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./infrastructure/gateway/html:/usr/share/nginx/html:ro
+    depends_on:
+      identity-service:
+        condition: service_healthy
+      employee-service:
+        condition: service_healthy
+      contractor-service:
+        condition: service_healthy
+      customer-service:
+        condition: service_healthy
+      supplier-service:
+        condition: service_healthy
+      realtime-gateway:
+        condition: service_healthy
+    networks: [private, edge]
+
+  caddy:
+    image: caddy:2.8-alpine
+    restart: unless-stopped
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [gateway]
+    networks: [edge]
+
+networks:
+  private:
+    internal: true
+  edge:
+
+volumes:
+  postgres-data:
+  caddy-data:
+  caddy-config:
