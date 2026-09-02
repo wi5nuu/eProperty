@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import type { PaginatedResponse } from '../types'
 
 interface UsePaginationOptions {
@@ -17,21 +17,21 @@ export function usePagination<T>({
   const [lastPage, setLastPage] = useState(1)
   const [loading, setLoading] = useState(false)
 
-  const updateFromResponse = (response: PaginatedResponse<T>) => {
+  const updateFromResponse = useCallback((response: PaginatedResponse<T>) => {
     setData(response.data)
     setTotal(response.total)
     setLastPage(response.last_page)
     setPage(response.current_page)
-  }
+  }, [])
 
-  const goToPage = (newPage: number) => {
+  const goToPage = useCallback((newPage: number) => {
     if (newPage >= 1 && newPage <= lastPage) {
       setPage(newPage)
     }
-  }
+  }, [lastPage])
 
-  const nextPage = () => goToPage(page + 1)
-  const prevPage = () => goToPage(page - 1)
+  const nextPage = useCallback(() => goToPage(page + 1), [goToPage, page])
+  const prevPage = useCallback(() => goToPage(page - 1), [goToPage, page])
 
   return {
     page,
