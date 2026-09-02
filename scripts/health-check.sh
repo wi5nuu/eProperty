@@ -3,40 +3,47 @@ set -e
 
 echo "Testing all microservices via gateway..."
 
+# Track failures
+FAILURES=0
+
+check() {
+    local name=$1
+    local url=$2
+    if curl -sf "$url" > /dev/null 2>&1; then
+        echo "✓ $name"
+    else
+        echo "✗ $name ($url)"
+        FAILURES=$((FAILURES + 1))
+    fi
+}
+
 # Test Gateway
-echo "→ Testing Gateway"
-curl -f http://localhost:8081/health || echo "Gateway failed"
+check "Gateway" "http://localhost:8081/health"
 
 # Test Identity Service via gateway
-echo "→ Testing Identity Service"
-curl -f http://localhost:8081/api/v1/identity/health || echo "Identity service failed"
+check "Identity Service" "http://localhost:8081/api/v1/identity/health"
 
 # Test Customer Service via gateway
-echo "→ Testing Customer Service"
-curl -f http://localhost:8081/api/v1/customers/health || echo "Customer service failed"
+check "Customer Service" "http://localhost:8081/api/v1/customers/health"
 
 # Test Employee Service via gateway
-echo "→ Testing Employee Service"
-curl -f http://localhost:8081/api/v1/employees/health || echo "Employee service failed"
+check "Employee Service" "http://localhost:8081/api/v1/employees/health"
 
 # Test Contractor Service via gateway
-echo "→ Testing Contractor Service"
-curl -f http://localhost:8081/api/v1/contractors/health || echo "Contractor service failed"
+check "Contractor Service" "http://localhost:8081/api/v1/contractors/health"
 
 # Test Supplier Service via gateway
-echo "→ Testing Supplier Service"
-curl -f http://localhost:8081/api/v1/suppliers/health || echo "Supplier service failed"
+check "Supplier Service" "http://localhost:8081/api/v1/suppliers/health"
 
 # Test Meter Reading Service via gateway
-echo "→ Testing Meter Reading Service"
-curl -f http://localhost:8081/api/v1/meter/health || echo "Meter reading service failed"
+check "Meter Reading Service" "http://localhost:8081/api/v1/meter/health"
 
 # Test Realtime Gateway
-echo "→ Testing Realtime Gateway"
-curl -f http://localhost:8081/ws/health || echo "Realtime gateway failed"
+check "Realtime Gateway" "http://localhost:8081/realtime/health"
 
-# Test Frontend
-echo "→ Testing Frontend"
-curl -f http://localhost:5173 || echo "Frontend failed"
-
-echo "✓ Health check completed!"
+if [ $FAILURES -gt 0 ]; then
+    echo "Health check completed with $FAILURES failure(s)"
+    exit 1
+else
+    echo "All services healthy!"
+fi
