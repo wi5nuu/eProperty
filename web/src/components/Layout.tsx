@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
 import { Menu, X, Home, Users, Briefcase, HardHat, UserCog, LogOut, Moon, Sun, Droplets, MapPin, Building } from 'lucide-react'
 import { useAuthStore } from '../store/authStore'
+import { useThemeStore } from '../store/themeStore'
 
 const navItems = [
   { to: '/', icon: Home, label: 'Dashboard' },
@@ -18,22 +19,22 @@ const navItems = [
 
 export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [dark, setDark] = useState(false)
   const { user, logout } = useAuthStore()
+  const { theme, toggleTheme } = useThemeStore()
   const navigate = useNavigate()
+  const isDark = theme === 'dark'
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout()
     navigate('/login')
-  }
+  }, [logout, navigate])
 
-  const toggleDark = () => {
-    setDark(!dark)
-    document.documentElement.classList.toggle('dark')
-  }
+  const handleToggleDark = useCallback(() => {
+    toggleTheme()
+  }, [toggleTheme])
 
   return (
-    <div className={`min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors ${dark ? 'dark' : ''}`}>
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors">
       <div className="fixed inset-0 z-40 flex">
         {sidebarOpen && (
           <div
@@ -107,10 +108,10 @@ export default function Layout() {
             </button>
             <div className="hidden lg:block" />
             <button
-              onClick={toggleDark}
+              onClick={handleToggleDark}
               className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-all"
             >
-              {dark ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} className="text-slate-600" />}
+              {isDark ? <Sun size={20} className="text-amber-400" /> : <Moon size={20} className="text-slate-600" />}
             </button>
           </header>
           <main className="flex-1 p-4 lg:p-6 overflow-auto">
