@@ -41,7 +41,16 @@ class AuthController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json(['data' => $request->attributes->get('token_claims')]);
+        $claims = $request->attributes->get('token_claims');
+        
+        return response()->json([
+            'data' => [
+                'id' => $claims['sub'] ?? null,
+                'email' => $claims['email'] ?? null,
+                'name' => $claims['name'] ?? null,
+                'role' => $claims['role'] ?? null,
+            ]
+        ]);
     }
 
     public function logout(Request $request): JsonResponse
