@@ -18,6 +18,9 @@ return new class extends Migration
             $table->string('employment_status', 20)->default('active')->index();
             $table->date('hired_on')->nullable();
             $table->timestamps();
+
+            $table->index('department');
+            $table->index('position');
         });
     }
 

@@ -26,6 +26,7 @@ return new class extends Migration
             $table->index('status');
             $table->index('rt');
             $table->index('rw');
+            $table->index('block');
         });
     }
 

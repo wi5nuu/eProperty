@@ -20,6 +20,8 @@ return new class extends Migration
             $table->string('specialization', 120)->nullable();
             $table->string('status', 20)->default('active')->index();
             $table->timestamps();
+
+            $table->index('specialization');
         });
     }
 
