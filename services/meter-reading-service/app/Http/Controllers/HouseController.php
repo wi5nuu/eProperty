@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\House;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class HouseController extends Controller
 {
@@ -55,7 +56,7 @@ class HouseController extends Controller
             'meter_number'  => 'nullable|string|max:30',
             'latitude'      => 'nullable|numeric|between:-90,90',
             'longitude'     => 'nullable|numeric|between:-180,180',
-            'status'        => 'nullable|string|max:20',
+            'status'        => ['nullable', Rule::in(['active', 'inactive'])],
         ]);
 
         $house = House::create($validated);
@@ -83,7 +84,7 @@ class HouseController extends Controller
             'meter_number'  => 'nullable|string|max:30',
             'latitude'      => 'nullable|numeric|between:-90,90',
             'longitude'     => 'nullable|numeric|between:-180,180',
-            'status'        => 'nullable|string|max:20',
+            'status'        => ['nullable', Rule::in(['active', 'inactive'])],
         ]);
 
         $house->update($validated);
@@ -100,8 +101,8 @@ class HouseController extends Controller
 
     public function mapData(): JsonResponse
     {
-        $houses = House::where('latitude', '!=', null)
-            ->where('longitude', '!=', null)
+        $houses = House::whereNotNull('latitude')
+            ->whereNotNull('longitude')
             ->select('id', 'house_code', 'owner_name', 'address', 'block', 'latitude', 'longitude', 'status')
             ->get();
 
