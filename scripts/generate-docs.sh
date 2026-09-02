@@ -9,7 +9,7 @@ for service in services/*/; do
   if [ -f "$service/composer.json" ]; then
     echo "  - $(basename $service)"
     cd "$service"
-    if [ -f "./vendor/bin/phpstan" ]; then
+    if [ -f "./vendor/bin/artisan" ]; then
       php artisan route:list --json > ../../docs/api-$(basename $service).json
     fi
     cd ../..
