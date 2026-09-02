@@ -5,7 +5,7 @@ echo "Setting up development environment..."
 
 # Check prerequisites
 command -v docker >/dev/null 2>&1 || { echo "Docker is required but not installed. Aborting."; exit 1; }
-command -v docker-compose >/dev/null 2>&1 || { echo "Docker Compose is required but not installed. Aborting."; exit 1; }
+docker compose version >/dev/null 2>&1 || docker-compose version >/dev/null 2>&1 || { echo "Docker Compose is required but not installed. Aborting."; exit 1; }
 command -v node >/dev/null 2>&1 || { echo "Node.js is required but not installed. Aborting."; exit 1; }
 command -v composer >/dev/null 2>&1 || { echo "Composer is required but not installed. Aborting."; exit 1; }
 
@@ -33,11 +33,15 @@ cd ..
 
 # Start Docker containers
 echo "→ Starting Docker containers"
-docker-compose up -d
+if docker compose version >/dev/null 2>&1; then
+  docker compose up -d
+else
+  docker-compose up -d
+fi
 
 # Wait for databases to be ready
 echo "→ Waiting for databases to be ready..."
-sleep 10
+sleep 15
 
 # Run migrations and seeders
 echo "→ Running migrations and seeders"

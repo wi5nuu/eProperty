@@ -1,35 +1,39 @@
 #!/bin/bash
 set -e
 
-echo "Testing all microservices..."
+echo "Testing all microservices via gateway..."
 
-# Test Identity Service
+# Test Gateway
+echo "→ Testing Gateway"
+curl -f http://localhost:8081/health || echo "Gateway failed"
+
+# Test Identity Service via gateway
 echo "→ Testing Identity Service"
-curl -f http://localhost:8001/api/v1/health || echo "Identity service failed"
+curl -f http://localhost:8081/api/v1/identity/health || echo "Identity service failed"
 
-# Test Customer Service
+# Test Customer Service via gateway
 echo "→ Testing Customer Service"
-curl -f http://localhost:8002/api/v1/health || echo "Customer service failed"
+curl -f http://localhost:8081/api/v1/customers/health || echo "Customer service failed"
 
-# Test Employee Service
+# Test Employee Service via gateway
 echo "→ Testing Employee Service"
-curl -f http://localhost:8003/api/v1/health || echo "Employee service failed"
+curl -f http://localhost:8081/api/v1/employees/health || echo "Employee service failed"
 
-# Test Contractor Service
+# Test Contractor Service via gateway
 echo "→ Testing Contractor Service"
-curl -f http://localhost:8004/api/v1/health || echo "Contractor service failed"
+curl -f http://localhost:8081/api/v1/contractors/health || echo "Contractor service failed"
 
-# Test Supplier Service
+# Test Supplier Service via gateway
 echo "→ Testing Supplier Service"
-curl -f http://localhost:8005/api/v1/health || echo "Supplier service failed"
+curl -f http://localhost:8081/api/v1/suppliers/health || echo "Supplier service failed"
 
-# Test Meter Reading Service
+# Test Meter Reading Service via gateway
 echo "→ Testing Meter Reading Service"
-curl -f http://localhost:8006/api/v1/health || echo "Meter reading service failed"
+curl -f http://localhost:8081/api/v1/meter/health || echo "Meter reading service failed"
 
 # Test Realtime Gateway
 echo "→ Testing Realtime Gateway"
-curl -f http://localhost:8080/health || echo "Realtime gateway failed"
+curl -f http://localhost:8081/ws/health || echo "Realtime gateway failed"
 
 # Test Frontend
 echo "→ Testing Frontend"
