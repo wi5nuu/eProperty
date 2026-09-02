@@ -14,6 +14,8 @@ export function useApi<T = any>(
   const [error, setError] = useState<AppError | null>(null)
   const [loading, setLoading] = useState(false)
 
+  const { onSuccess, onError } = options
+
   const execute = useCallback(
     async (...args: any[]) => {
       setLoading(true)
@@ -22,18 +24,18 @@ export function useApi<T = any>(
       try {
         const result = await apiFunction(...args)
         setData(result)
-        options.onSuccess?.(result)
+        onSuccess?.(result)
         return result
       } catch (err) {
         const appError = handleApiError(err)
         setError(appError)
-        options.onError?.(appError)
+        onError?.(appError)
         throw appError
       } finally {
         setLoading(false)
       }
     },
-    [apiFunction, options]
+    [apiFunction, onSuccess, onError]
   )
 
   const reset = useCallback(() => {

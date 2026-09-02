@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useAuthStore } from '../store/authStore'
 import { useThemeStore } from '../store/themeStore'
+import { isTokenExpired } from '../utils/jwt'
 
 export function useInitializeApp() {
   const { theme } = useThemeStore()
@@ -15,11 +16,10 @@ export function useInitializeApp() {
   }, [theme])
 
   useEffect(() => {
-    // Check authentication status
+    // Check authentication status and token expiration
     const token = useAuthStore.getState().token
-    if (token) {
-      // Token exists, could validate it here
-      console.log('[App] User is authenticated')
+    if (token && isTokenExpired(token)) {
+      useAuthStore.getState().logout()
     }
   }, [])
 }
