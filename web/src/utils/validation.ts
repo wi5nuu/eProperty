@@ -33,12 +33,16 @@ export const invoiceSchema = z.object({
 
 // Meter reading validation schema
 export const meterReadingSchema = z.object({
-  property_id: z.number().positive('Property wajib dipilih'),
-  meter_type: z.enum(['water', 'electricity', 'gas']),
-  current_reading: z.number().min(0, 'Pembacaan tidak boleh negatif'),
-  previous_reading: z.number().min(0, 'Pembacaan tidak boleh negatif'),
+  house_id: z.number().positive('Rumah wajib dipilih'),
   reading_date: z.string().refine((date) => !isNaN(Date.parse(date)), 'Format tanggal tidak valid'),
-})
+  previous_reading: z.number().min(0, 'Pembacaan tidak boleh negatif'),
+  current_reading: z.number().min(0, 'Pembacaan tidak boleh negatif'),
+  reader_name: z.string().min(1, 'Nama petugas wajib diisi'),
+  notes: z.string().optional(),
+}).refine(
+  (data) => data.current_reading >= data.previous_reading,
+  { message: 'Pembacaan saat ini harus lebih besar atau sama dengan pembacaan sebelumnya' }
+)
 
 export type LoginInput = z.infer<typeof loginSchema>
 export type PropertyInput = z.infer<typeof propertySchema>

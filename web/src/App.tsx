@@ -19,6 +19,16 @@ import ReadingForm from './pages/meter/ReadingForm'
 import ReadingHistory from './pages/meter/ReadingHistory'
 import MapView from './pages/meter/MapView'
 
+function NotFound() {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 gap-4">
+      <p className="text-6xl font-bold text-slate-300 dark:text-slate-600">404</p>
+      <p className="text-lg text-slate-600 dark:text-slate-300">Halaman tidak ditemukan</p>
+      <a href="/" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Kembali ke Dashboard</a>
+    </div>
+  )
+}
+
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token)
   if (!token) return <Navigate to="/login" replace />
@@ -61,6 +71,7 @@ export default function App() {
         <Route path="meter/houses/:houseId/readings" element={<ReadingHistory />} />
         <Route path="meter/houses/:houseId/reading" element={<ReadingForm />} />
         <Route path="meter/map" element={<MapView />} />
+        <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
   )

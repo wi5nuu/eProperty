@@ -32,6 +32,13 @@ export const useThemeStore = create<ThemeState>()(
           return { theme: newTheme }
         }),
     }),
-    { name: 'eproperty-theme' }
+    {
+      name: 'eproperty-theme',
+      onRehydrateStorage: () => (state) => {
+        if (state?.theme === 'dark') {
+          document.documentElement.classList.add('dark')
+        }
+      },
+    }
   )
 )
