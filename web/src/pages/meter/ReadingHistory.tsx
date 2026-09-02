@@ -46,7 +46,7 @@ export default function ReadingHistory() {
     }
   }
 
-  useEffect(() => { load(page) }, [houseId])
+  useEffect(() => { load(1) }, [houseId])
 
   const statusColor = (s: string) => {
     if (s === 'confirmed') return 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
@@ -112,7 +112,7 @@ export default function ReadingHistory() {
           {lastPage > 1 && (
             <div className="flex items-center justify-center gap-4 pt-4">
               <button
-                onClick={() => { setPage(p => p - 1); load(page - 1) }}
+                onClick={() => setPage(p => { load(p - 1); return p - 1 })}
                 disabled={page <= 1}
                 className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 transition-all"
               >
@@ -120,7 +120,7 @@ export default function ReadingHistory() {
               </button>
               <span className="text-sm text-slate-600 dark:text-slate-300">Halaman {page} dari {lastPage}</span>
               <button
-                onClick={() => { setPage(p => p + 1); load(page + 1) }}
+                onClick={() => setPage(p => { load(p + 1); return p + 1 })}
                 disabled={page >= lastPage}
                 className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 disabled:opacity-40 transition-all"
               >
@@ -146,13 +146,13 @@ export default function ReadingHistory() {
               {photoModal.before && (
                 <div>
                   <p className="text-xs text-center text-slate-500 dark:text-slate-400 mb-1">Sebelum</p>
-                  <img src={`/${photoModal.before}`} alt="Before" className="w-full rounded-xl" />
+                  <img src={photoModal.before.startsWith('http') ? photoModal.before : `/${photoModal.before}`} alt="Before" className="w-full rounded-xl" />
                 </div>
               )}
               {photoModal.after && (
                 <div>
                   <p className="text-xs text-center text-slate-500 dark:text-slate-400 mb-1">Sesudah</p>
-                  <img src={`/${photoModal.after}`} alt="After" className="w-full rounded-xl" />
+                  <img src={photoModal.after.startsWith('http') ? photoModal.after : `/${photoModal.after}`} alt="After" className="w-full rounded-xl" />
                 </div>
               )}
             </div>
