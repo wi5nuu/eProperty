@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('health', fn () => response()->json(['status' => 'ok', 'service' => 'meter-reading-service']));
 
-Route::middleware('jwt')->group(function (): void {
+Route::middleware(['jwt', 'throttle:api'])->group(function (): void {
     Route::get('dashboard', [DashboardController::class, 'index']);
 
     Route::get('houses/map', [HouseController::class, 'mapData']);
