@@ -19,6 +19,8 @@ return new class extends Migration
             $table->string('npwp', 30)->nullable();
             $table->string('status', 20)->default('active')->index();
             $table->timestamps();
+
+            $table->index('name');
         });
     }
 
