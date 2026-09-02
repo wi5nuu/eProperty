@@ -20,7 +20,7 @@ export function useApi<T = any>(
     async (...args: any[]) => {
       setLoading(true)
       setError(null)
-      
+
       try {
         const result = await apiFunction(...args)
         setData(result)
