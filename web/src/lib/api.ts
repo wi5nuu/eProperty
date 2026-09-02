@@ -1,6 +1,8 @@
 import axios from 'axios'
 import { useAuthStore } from '../store/authStore'
 
+let isRedirectingToLogin = false
+
 const api = axios.create({
   baseURL: '/api/v1',
   timeout: 15000,
@@ -28,7 +30,8 @@ api.interceptors.response.use(
     if (import.meta.env.DEV) {
       console.error(`[API Error] ${err.config?.method?.toUpperCase()} ${err.config?.url} - ${err.response?.status || 'Network Error'}`)
     }
-    if (err.response?.status === 401) {
+    if (err.response?.status === 401 && !isRedirectingToLogin) {
+      isRedirectingToLogin = true
       useAuthStore.getState().logout()
       window.location.href = '/login'
     }
