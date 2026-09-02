@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Camera, Loader2, Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
@@ -43,22 +43,39 @@ export default function ReadingForm() {
     }
   }, [houseId])
 
-  const handlePhoto = (file: File, type: 'before' | 'after') => {
+  useEffect(() => {
+    return () => {
+      if (previewBefore) URL.revokeObjectURL(previewBefore)
+      if (previewAfter) URL.revokeObjectURL(previewAfter)
+    }
+  }, [previewBefore, previewAfter])
+
+  const handlePhoto = useCallback((file: File, type: 'before' | 'after') => {
     if (type === 'before') {
       setPhotoBefore(file)
+      if (previewBefore) URL.revokeObjectURL(previewBefore)
       setPreviewBefore(URL.createObjectURL(file))
     } else {
       setPhotoAfter(file)
+      if (previewAfter) URL.revokeObjectURL(previewAfter)
       setPreviewAfter(URL.createObjectURL(file))
     }
-  }
+  }, [previewBefore, previewAfter])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!houseId) {
+      toast.error('House ID tidak valid')
+      return
+    }
+    if (Number(form.current_reading) < Number(form.previous_reading)) {
+      toast.error('Pembacaan saat ini harus lebih besar dari pembacaan sebelumnya')
+      return
+    }
     setLoading(true)
     try {
       const fd = new FormData()
-      fd.append('house_id', houseId!)
+      fd.append('house_id', houseId)
       fd.append('reading_date', form.reading_date)
       fd.append('previous_reading', form.previous_reading)
       fd.append('current_reading', form.current_reading)
