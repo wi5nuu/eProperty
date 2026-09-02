@@ -7,6 +7,14 @@ export function formatCurrency(amount: number): string {
   }).format(amount)
 }
 
+export function formatNumber(value: number, decimals = 2): string {
+  if (!isFinite(value)) return '0'
+  return new Intl.NumberFormat('id-ID', {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: decimals,
+  }).format(value)
+}
+
 export function formatDate(date: string | Date): string {
   const d = typeof date === 'string' ? new Date(date) : date
   return new Intl.DateTimeFormat('id-ID', {
@@ -37,6 +45,6 @@ export function formatRelativeTime(date: string | Date): string {
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} menit yang lalu`
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`
   if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)} hari yang lalu`
-  
+
   return formatDate(d)
 }
