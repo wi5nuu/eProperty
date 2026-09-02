@@ -20,6 +20,8 @@ return new class extends Migration
             $table->unsignedInteger('payment_terms_days')->default(30);
             $table->string('status', 20)->default('active')->index();
             $table->timestamps();
+
+            $table->index('name');
         });
     }
 
