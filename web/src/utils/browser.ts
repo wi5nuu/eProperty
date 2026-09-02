@@ -1,8 +1,9 @@
 export function downloadFile(data: Blob, filename: string): void {
+  const sanitized = filename.replace(/[<>:"/\\|?*]/g, '_').substring(0, 255)
   const url = window.URL.createObjectURL(data)
   const link = document.createElement('a')
   link.href = url
-  link.download = filename
+  link.download = sanitized
   document.body.appendChild(link)
   link.click()
   document.body.removeChild(link)
