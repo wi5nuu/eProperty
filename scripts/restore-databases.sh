@@ -18,28 +18,35 @@ fi
 
 echo "→ Restoring from: $BACKUP_DIR"
 
+# Determine docker compose command
+if docker compose version >/dev/null 2>&1; then
+  COMPOSE="docker compose"
+else
+  COMPOSE="docker-compose"
+fi
+
 # Identity Service
 echo "→ Restoring Identity Service database"
-docker exec -i eproperty-identity-db-1 psql -U postgres identity_db < "$BACKUP_DIR/identity_db.sql"
+$COMPOSE exec -T postgres psql -U postgres identity_db < "$BACKUP_DIR/identity_db.sql"
 
 # Customer Service
 echo "→ Restoring Customer Service database"
-docker exec -i eproperty-customer-db-1 psql -U postgres customer_db < "$BACKUP_DIR/customer_db.sql"
+$COMPOSE exec -T postgres psql -U postgres customer_db < "$BACKUP_DIR/customer_db.sql"
 
 # Employee Service
 echo "→ Restoring Employee Service database"
-docker exec -i eproperty-employee-db-1 psql -U postgres employee_db < "$BACKUP_DIR/employee_db.sql"
+$COMPOSE exec -T postgres psql -U postgres employee_db < "$BACKUP_DIR/employee_db.sql"
 
 # Contractor Service
 echo "→ Restoring Contractor Service database"
-docker exec -i eproperty-contractor-db-1 psql -U postgres contractor_db < "$BACKUP_DIR/contractor_db.sql"
+$COMPOSE exec -T postgres psql -U postgres contractor_db < "$BACKUP_DIR/contractor_db.sql"
 
 # Supplier Service
 echo "→ Restoring Supplier Service database"
-docker exec -i eproperty-supplier-db-1 psql -U postgres supplier_db < "$BACKUP_DIR/supplier_db.sql"
+$COMPOSE exec -T postgres psql -U postgres supplier_db < "$BACKUP_DIR/supplier_db.sql"
 
 # Meter Reading Service
 echo "→ Restoring Meter Reading Service database"
-docker exec -i eproperty-meter-db-1 psql -U postgres meter_db < "$BACKUP_DIR/meter_db.sql"
+$COMPOSE exec -T postgres psql -U postgres meter_reading_db < "$BACKUP_DIR/meter_reading_db.sql"
 
 echo "✓ All databases restored successfully from $BACKUP_DIR"
