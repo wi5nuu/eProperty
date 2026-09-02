@@ -51,7 +51,7 @@ services:
       RABBITMQ_PORT: 5672
       RABBITMQ_USER: ${RABBITMQ_USER:-eproperty}
       RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-eproperty-dev-pass}
-    command: sh -c "php artisan migrate --force && php artisan db:seed --force && php artisan serve --host=0.0.0.0 --port=8000"
+    command: sh -c "php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=8000"
     depends_on:
       postgres:
         condition: service_healthy
