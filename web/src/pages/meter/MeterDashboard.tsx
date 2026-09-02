@@ -3,14 +3,27 @@ import { Droplets, Home, Clock, CheckCircle, AlertTriangle, TrendingUp } from 'l
 import toast from 'react-hot-toast'
 import api from '../../lib/api'
 
+interface RecentReading {
+  id: number
+  reading_date: string
+  consumption: number
+  status: string
+  house: { house_code: string; owner_name: string }
+}
+
+interface BlockStat {
+  block: string
+  total: number
+}
+
 interface DashboardData {
   total_houses: number
   active_houses: number
   readings_this_month: number
   pending_readings: number
   total_consumption: number
-  recent_readings: any[]
-  block_stats: { block: string; total: number }[]
+  recent_readings: RecentReading[]
+  block_stats: BlockStat[]
 }
 
 export default function MeterDashboard() {

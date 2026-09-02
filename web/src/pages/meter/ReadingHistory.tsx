@@ -4,6 +4,13 @@ import { ArrowLeft, Camera, Loader2, ChevronLeft, ChevronRight } from 'lucide-re
 import toast from 'react-hot-toast'
 import api from '../../lib/api'
 
+interface House {
+  id: number
+  house_code: string
+  owner_name: string
+  address: string
+}
+
 interface Reading {
   id: number
   reading_date: string
@@ -22,7 +29,7 @@ export default function ReadingHistory() {
   const { houseId } = useParams()
   const navigate = useNavigate()
   const [readings, setReadings] = useState<Reading[]>([])
-  const [house, setHouse] = useState<any>(null)
+  const [house, setHouse] = useState<House | null>(null)
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [lastPage, setLastPage] = useState(1)

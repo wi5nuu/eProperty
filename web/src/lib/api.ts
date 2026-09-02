@@ -3,6 +3,10 @@ import { useAuthStore } from '../store/authStore'
 
 let isRedirectingToLogin = false
 
+function generateRequestId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substring(2, 9)
+}
+
 const api = axios.create({
   baseURL: '/api/v1',
   timeout: 15000,
@@ -13,6 +17,7 @@ api.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
   }
+  config.headers['X-Request-Id'] = generateRequestId()
   if (import.meta.env.DEV) {
     console.log(`[API Request] ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`)
   }
