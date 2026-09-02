@@ -76,7 +76,9 @@ class MeterReadingController extends Controller
             'previous_reading'  => 'sometimes|required|numeric|min:0',
             'current_reading'   => 'sometimes|required|numeric|min:0|gte:previous_reading',
             'notes'             => 'nullable|string',
-            'status'            => 'nullable|string|in:pending,confirmed,disputed',
+            'status'            => ['nullable', 'string', 'in:pending,confirmed,disputed'],
+            'photo_before'      => 'nullable|image|max:5120',
+            'photo_after'       => 'nullable|image|max:5120',
         ]);
 
         if (isset($validated['previous_reading']) || isset($validated['current_reading'])) {
