@@ -1,10 +1,11 @@
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
   label?: string
   error?: string
+  placeholder?: string
   options: Array<{ value: string; label: string }>
 }
 
-export function Select({ label, error, options, className = '', ...props }: SelectProps) {
+export function Select({ label, error, options, placeholder, className = '', ...props }: SelectProps) {
   return (
     <div className="w-full">
       {label && (
@@ -20,6 +21,7 @@ export function Select({ label, error, options, className = '', ...props }: Sele
         } bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent outline-none transition-all ${className}`}
         {...props}
       >
+        {placeholder && <option value="" disabled>{placeholder}</option>}
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}
