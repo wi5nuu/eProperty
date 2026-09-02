@@ -38,14 +38,14 @@ export function sleep(ms: number): Promise<void> {
 
 export function retry<T>(
   fn: () => Promise<T>,
-  options: { retries?: number; delay?: number } = {}
+  options: { retries?: number; delay?: number; shouldRetry?: (e: any) => boolean } = {}
 ): Promise<T> {
-  const { retries = 3, delay = 1000 } = options
+  const { retries = 3, delay = 1000, shouldRetry = () => true } = options
 
   return fn().catch((error) => {
-    if (retries === 0) {
+    if (retries === 0 || !shouldRetry(error)) {
       throw error
     }
-    return sleep(delay).then(() => retry(fn, { retries: retries - 1, delay }))
+    return sleep(delay).then(() => retry(fn, { retries: retries - 1, delay, shouldRetry }))
   })
 }

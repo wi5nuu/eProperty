@@ -4,8 +4,8 @@ export function validateEmail(email: string): boolean {
 }
 
 export function validatePhone(phone: string): boolean {
-  const phoneRegex = /^[\d\s\-+()]{10,}$/
-  return phoneRegex.test(phone)
+  const cleaned = phone.replace(/[\s\-+()]/g, '')
+  return /^\d{10,15}$/.test(cleaned)
 }
 
 export function validateUrl(url: string): boolean {
@@ -47,6 +47,11 @@ export function validatePassword(password: string): {
 
 export function sanitizeInput(input: string): string {
   return input
-    .replace(/[<>]/g, '')
+    .replace(/[<>"'&]/g, (match) => {
+      const map: Record<string, string> = {
+        '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;', '&': '&amp;'
+      }
+      return map[match]
+    })
     .trim()
 }

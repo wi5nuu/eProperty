@@ -1,4 +1,5 @@
 export function formatCurrency(amount: number): string {
+  if (!isFinite(amount)) return 'Rp 0'
   return new Intl.NumberFormat('id-ID', {
     style: 'currency',
     currency: 'IDR',
@@ -31,6 +32,7 @@ export function formatRelativeTime(date: string | Date): string {
   const now = new Date()
   const diffInSeconds = Math.floor((now.getTime() - d.getTime()) / 1000)
 
+  if (diffInSeconds < 0) return formatDate(d)
   if (diffInSeconds < 60) return 'Baru saja'
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} menit yang lalu`
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} jam yang lalu`
