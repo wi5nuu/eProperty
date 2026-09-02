@@ -13,6 +13,7 @@ const JWT_ISSUER = process.env.JWT_ISSUER || 'eproperty-identity';
 const JWT_AUDIENCE = process.env.JWT_AUDIENCE || 'eproperty-services';
 const RECONNECT_BASE_MS = 1000;
 const RECONNECT_MAX_MS = 30000;
+const MAX_CLIENTS = 1000;
 
 const clients = new Set();
 let amqpConnection = null;
@@ -61,6 +62,10 @@ httpServer.on('upgrade', (request, socket, head) => {
   }
 
   wss.handleUpgrade(request, socket, head, (ws) => {
+    if (clients.size >= MAX_CLIENTS) {
+      ws.close(1013, 'Server is full');
+      return;
+    }
     ws.context = { email: payload.email || null, connectedAt: new Date().toISOString() };
     ws.isAlive = true;
     clients.add(ws);
@@ -136,10 +141,10 @@ async function connectAmqp() {
         const envelope = JSON.parse(message.content.toString('utf8'));
         envelope.event_id = envelope.event_id || message.properties.messageId;
         broadcast(JSON.stringify(envelope));
+        channel.ack(message);
       } catch (err) {
         console.error('[realtime-gateway] pesan tidak valid:', err.message);
-      } finally {
-        channel.ack(message);
+        channel.nack(message, false, false);
       }
     }, { noLocal: false });
 
@@ -154,6 +159,14 @@ async function connectAmqp() {
 }
 
 process.on('SIGTERM', () => {
+  shouldRun = false;
+  for (const client of clients) client.close(1001, 'server shutting down');
+  amqpConnection?.close().catch(() => {});
+  httpServer.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 3000).unref();
+});
+
+process.on('SIGINT', () => {
   shouldRun = false;
   for (const client of clients) client.close(1001, 'server shutting down');
   amqpConnection?.close().catch(() => {});
