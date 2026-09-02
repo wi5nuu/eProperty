@@ -14,10 +14,10 @@ class HouseController extends Controller
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
-                $q->where('house_code', 'ilike', "%{$search}%")
-                  ->orWhere('owner_name', 'ilike', "%{$search}%")
-                  ->orWhere('address', 'ilike', "%{$search}%")
-                  ->orWhere('block', 'ilike', "%{$search}%");
+                $q->where('house_code', 'like', "%" . str_replace(['%', '_'], ['\\%', '\\_'], $search) . "%")
+                  ->orWhere('owner_name', 'like', "%" . str_replace(['%', '_'], ['\\%', '\\_'], $search) . "%")
+                  ->orWhere('address', 'like', "%" . str_replace(['%', '_'], ['\\%', '\\_'], $search) . "%")
+                  ->orWhere('block', 'like', "%" . str_replace(['%', '_'], ['\\%', '\\_'], $search) . "%");
             });
         }
 

@@ -79,8 +79,10 @@ class MeterReadingController extends Controller
             'status'            => 'nullable|string|in:pending,confirmed,disputed',
         ]);
 
-        if (isset($validated['previous_reading']) && isset($validated['current_reading'])) {
-            $validated['consumption'] = $validated['current_reading'] - $validated['previous_reading'];
+        if (isset($validated['previous_reading']) || isset($validated['current_reading'])) {
+            $prev = $validated['previous_reading'] ?? $meterReading->previous_reading;
+            $curr = $validated['current_reading'] ?? $meterReading->current_reading;
+            $validated['consumption'] = $curr - $prev;
         }
 
         if ($request->hasFile('photo_before')) {
@@ -103,14 +105,17 @@ class MeterReadingController extends Controller
 
     public function destroy(MeterReading $meterReading): JsonResponse
     {
-        if ($meterReading->photo_before) {
-            Storage::disk('public')->delete($meterReading->photo_before);
-        }
-        if ($meterReading->photo_after) {
-            Storage::disk('public')->delete($meterReading->photo_after);
-        }
+        $photoBefore = $meterReading->photo_before;
+        $photoAfter = $meterReading->photo_after;
 
         $meterReading->delete();
+
+        if ($photoBefore) {
+            Storage::disk('public')->delete($photoBefore);
+        }
+        if ($photoAfter) {
+            Storage::disk('public')->delete($photoAfter);
+        }
 
         return response()->json(status: 204);
     }
