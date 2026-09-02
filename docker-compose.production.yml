@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   nginx:
     image: nginx:alpine
@@ -10,14 +8,20 @@ services:
       - ./deploy/nginx.conf:/etc/nginx/nginx.conf:ro
       - ./deploy/ssl:/etc/nginx/ssl:ro
     depends_on:
-      - identity-service
-      - customer-service
-      - employee-service
-      - contractor-service
-      - supplier-service
-      - meter-reading-service
-      - realtime-gateway
-      - web
+      identity-service:
+        condition: service_healthy
+      customer-service:
+        condition: service_healthy
+      employee-service:
+        condition: service_healthy
+      contractor-service:
+        condition: service_healthy
+      supplier-service:
+        condition: service_healthy
+      meter-reading-service:
+        condition: service_healthy
+      realtime-gateway:
+        condition: service_started
     networks:
       - eproperty-network
     restart: unless-stopped
@@ -37,11 +41,18 @@ services:
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
+      - DB_HOST=identity-db
+      - DB_DATABASE=identity_db
     depends_on:
-      - identity-db
-      - redis
+      identity-db:
+        condition: service_healthy
     networks:
       - eproperty-network
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit((int) !@file_get_contents('http://127.0.0.1:8000/up'));\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
   customer-service:
@@ -49,11 +60,18 @@ services:
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
+      - DB_HOST=customer-db
+      - DB_DATABASE=customer_db
     depends_on:
-      - customer-db
-      - redis
+      customer-db:
+        condition: service_healthy
     networks:
       - eproperty-network
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit((int) !@file_get_contents('http://127.0.0.1:8000/up'));\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
   employee-service:
@@ -61,11 +79,18 @@ services:
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
+      - DB_HOST=employee-db
+      - DB_DATABASE=employee_db
     depends_on:
-      - employee-db
-      - redis
+      employee-db:
+        condition: service_healthy
     networks:
       - eproperty-network
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit((int) !@file_get_contents('http://127.0.0.1:8000/up'));\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
   contractor-service:
@@ -73,11 +98,18 @@ services:
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
+      - DB_HOST=contractor-db
+      - DB_DATABASE=contractor_db
     depends_on:
-      - contractor-db
-      - redis
+      contractor-db:
+        condition: service_healthy
     networks:
       - eproperty-network
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit((int) !@file_get_contents('http://127.0.0.1:8000/up'));\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
   supplier-service:
@@ -85,11 +117,18 @@ services:
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
+      - DB_HOST=supplier-db
+      - DB_DATABASE=supplier_db
     depends_on:
-      - supplier-db
-      - redis
+      supplier-db:
+        condition: service_healthy
     networks:
       - eproperty-network
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit((int) !@file_get_contents('http://127.0.0.1:8000/up'));\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
   meter-reading-service:
@@ -97,19 +136,24 @@ services:
     environment:
       - APP_ENV=production
       - APP_DEBUG=false
+      - DB_HOST=meter-db
+      - DB_DATABASE=meter_reading_db
     depends_on:
-      - meter-db
-      - redis
+      meter-db:
+        condition: service_healthy
     networks:
       - eproperty-network
+    healthcheck:
+      test: ["CMD-SHELL", "php -r \"exit((int) !@file_get_contents('http://127.0.0.1:8000/up'));\""]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
   realtime-gateway:
     build: ./services/realtime-gateway
     environment:
       - NODE_ENV=production
-    depends_on:
-      - redis
     networks:
       - eproperty-network
     restart: unless-stopped
@@ -124,6 +168,11 @@ services:
       - identity-data:/var/lib/postgresql/data
     networks:
       - eproperty-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
   customer-db:
@@ -136,6 +185,11 @@ services:
       - customer-data:/var/lib/postgresql/data
     networks:
       - eproperty-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
   employee-db:
@@ -148,6 +202,11 @@ services:
       - employee-data:/var/lib/postgresql/data
     networks:
       - eproperty-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
   contractor-db:
@@ -160,6 +219,11 @@ services:
       - contractor-data:/var/lib/postgresql/data
     networks:
       - eproperty-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
   supplier-db:
@@ -172,18 +236,28 @@ services:
       - supplier-data:/var/lib/postgresql/data
     networks:
       - eproperty-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
   meter-db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_DB: meter_db
+      POSTGRES_DB: meter_reading_db
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - meter-data:/var/lib/postgresql/data
     networks:
       - eproperty-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
     restart: unless-stopped
 
   redis:
