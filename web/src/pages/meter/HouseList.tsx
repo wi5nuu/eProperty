@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Plus, Search, Edit3, Trash2, MapPin, Loader2 } from 'lucide-react'
+import { Plus, Search, Edit3, Trash2, Droplets, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../lib/api'
+import { debounce } from '../../utils/helpers'
 
 interface House {
   id: number
@@ -21,14 +22,25 @@ export default function HouseList() {
   const [houses, setHouses] = useState<House[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [debouncedSearch, setDebouncedSearch] = useState('')
   const [filterBlock, setFilterBlock] = useState('')
   const navigate = useNavigate()
+
+  const debouncedSetSearch = useMemo(
+    () => debounce((val: string) => setDebouncedSearch(val), 300),
+    []
+  )
+
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value)
+    debouncedSetSearch(e.target.value)
+  }, [debouncedSetSearch])
 
   const load = async () => {
     setLoading(true)
     try {
       const params: any = { per_page: 100 }
-      if (search) params.search = search
+      if (debouncedSearch) params.search = debouncedSearch
       if (filterBlock) params.block = filterBlock
       const { data } = await api.get('/meter/houses', { params })
       setHouses(data.data ?? data)
@@ -39,7 +51,7 @@ export default function HouseList() {
     }
   }
 
-  useEffect(() => { load() }, [search, filterBlock])
+  useEffect(() => { load() }, [debouncedSearch, filterBlock])
 
   const handleDelete = async (id: number) => {
     if (!confirm('Yakin ingin menghapus data ini?')) return
@@ -74,7 +86,7 @@ export default function HouseList() {
             type="text"
             placeholder="Cari kode rumah, nama, alamat..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-800 text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
           />
         </div>
@@ -142,15 +154,5 @@ export default function HouseList() {
         </div>
       )}
     </div>
-  )
-}
-
-function Droplets({ size, ...props }: { size: number } & any) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}>
-      <path d="M7 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S7.29 6.75 7 5.3c-.29 1.45-1.14 2.84-2.29 3.76S3 11.1 3 12.25c0 2.22 1.8 4.05 4 4.05z" />
-      <path d="M12.56 14.69c1.44 0 2.6-1.16 2.6-2.62 0-.75-.38-1.45-1.14-2.03S12.95 8.4 12.77 7.72c-.16.9-.78 1.81-1.54 2.4s-1.14 1.28-1.14 2.03c0 1.46 1.16 2.62 2.6 2.62z" />
-      <path d="M17 16.3c2.2 0 4-1.83 4-4.05 0-1.16-.57-2.26-1.71-3.19S17.29 6.75 17 5.3c-.29 1.45-1.14 2.84-2.29 3.76S13 11.1 13 12.25c0 2.22 1.8 4.05 4 4.05z" />
-    </svg>
   )
 }
