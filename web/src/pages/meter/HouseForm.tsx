@@ -75,7 +75,7 @@ export default function HouseForm() {
     return <div className="flex items-center justify-center py-20"><Loader2 size={32} className="animate-spin text-blue-500" /></div>
   }
 
-  const fields = [
+  const fields: Array<{ name: string; label: string; required?: boolean; placeholder?: string; type?: string; step?: string }> = [
     { name: 'house_code', label: 'Kode Rumah', required: true, placeholder: 'R-001' },
     { name: 'owner_name', label: 'Nama Pemilik', required: true },
     { name: 'address', label: 'Alamat', required: true },
@@ -84,8 +84,8 @@ export default function HouseForm() {
     { name: 'rw', label: 'RW', placeholder: '001' },
     { name: 'phone', label: 'Telepon', placeholder: '08xxx' },
     { name: 'meter_number', label: 'Nomor Meter', placeholder: 'W-001' },
-    { name: 'latitude', label: 'Latitude', placeholder: '-6.2088' },
-    { name: 'longitude', label: 'Longitude', placeholder: '106.8456' },
+    { name: 'latitude', label: 'Latitude', placeholder: '-6.2088', type: 'number', step: 'any' },
+    { name: 'longitude', label: 'Longitude', placeholder: '106.8456', type: 'number', step: 'any' },
   ]
 
   return (
