@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, Camera, Loader2, Eye } from 'lucide-react'
+import { ArrowLeft, Camera, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import api from '../../lib/api'
 
@@ -131,6 +131,7 @@ export default function ReadingForm() {
               <input
                 type="number"
                 step="0.01"
+                min="0"
                 required
                 value={form.previous_reading}
                 onChange={(e) => setForm({ ...form, previous_reading: e.target.value })}
@@ -142,6 +143,7 @@ export default function ReadingForm() {
               <input
                 type="number"
                 step="0.01"
+                min="0"
                 required
                 value={form.current_reading}
                 onChange={(e) => setForm({ ...form, current_reading: e.target.value })}
