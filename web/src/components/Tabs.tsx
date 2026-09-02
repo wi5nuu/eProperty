@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 interface TabItem {
   key: string
   label: string
@@ -10,7 +12,7 @@ interface TabsProps {
 }
 
 export function Tabs({ items, defaultTab }: TabsProps) {
-  const [activeTab, setActiveTab] = React.useState(defaultTab || items[0]?.key)
+  const [activeTab, setActiveTab] = useState(defaultTab || items[0]?.key)
 
   return (
     <div>
@@ -37,5 +39,3 @@ export function Tabs({ items, defaultTab }: TabsProps) {
     </div>
   )
 }
-
-import React from 'react'

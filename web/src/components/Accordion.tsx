@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 
 interface AccordionProps {
@@ -7,7 +8,7 @@ interface AccordionProps {
 }
 
 export function Accordion({ title, children, defaultOpen = false }: AccordionProps) {
-  const [isOpen, setIsOpen] = React.useState(defaultOpen)
+  const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
     <div className="border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
@@ -30,5 +31,3 @@ export function Accordion({ title, children, defaultOpen = false }: AccordionPro
     </div>
   )
 }
-
-import React from 'react'
