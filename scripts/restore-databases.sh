@@ -18,6 +18,14 @@ fi
 
 echo "→ Restoring from: $BACKUP_DIR"
 
+# Confirmation prompt
+read -p "⚠ This will overwrite all databases. Continue? (y/N) " -n 1 -r
+echo
+if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+  echo "Aborted."
+  exit 0
+fi
+
 # Determine docker compose command
 if docker compose version >/dev/null 2>&1; then
   COMPOSE="docker compose"
@@ -25,28 +33,31 @@ else
   COMPOSE="docker-compose"
 fi
 
-# Identity Service
-echo "→ Restoring Identity Service database"
-$COMPOSE exec -T postgres psql -U postgres identity_db < "$BACKUP_DIR/identity_db.sql"
+POSTGRES_USER="${POSTGRES_USER:-postgres}"
 
-# Customer Service
-echo "→ Restoring Customer Service database"
-$COMPOSE exec -T postgres psql -U postgres customer_db < "$BACKUP_DIR/customer_db.sql"
+# Helper function to restore (supports .sql and .sql.gz)
+restore_db() {
+    local db=$1
+    local sql_file="$BACKUP_DIR/${db}.sql"
+    local gz_file="$BACKUP_DIR/${db}.sql.gz"
 
-# Employee Service
-echo "→ Restoring Employee Service database"
-$COMPOSE exec -T postgres psql -U postgres employee_db < "$BACKUP_DIR/employee_db.sql"
+    if [ -f "$gz_file" ]; then
+        echo "→ Restoring $db (compressed)"
+        gunzip -c "$gz_file" | $COMPOSE exec -T postgres psql -U "$POSTGRES_USER" "$db"
+    elif [ -f "$sql_file" ]; then
+        echo "→ Restoring $db"
+        $COMPOSE exec -T postgres psql -U "$POSTGRES_USER" "$db" < "$sql_file"
+    else
+        echo "⚠ Skipping $db (no backup found)"
+    fi
+}
 
-# Contractor Service
-echo "→ Restoring Contractor Service database"
-$COMPOSE exec -T postgres psql -U postgres contractor_db < "$BACKUP_DIR/contractor_db.sql"
-
-# Supplier Service
-echo "→ Restoring Supplier Service database"
-$COMPOSE exec -T postgres psql -U postgres supplier_db < "$BACKUP_DIR/supplier_db.sql"
-
-# Meter Reading Service
-echo "→ Restoring Meter Reading Service database"
-$COMPOSE exec -T postgres psql -U postgres meter_reading_db < "$BACKUP_DIR/meter_reading_db.sql"
+# Restore each database
+restore_db "identity_db"
+restore_db "customer_db"
+restore_db "employee_db"
+restore_db "contractor_db"
+restore_db "supplier_db"
+restore_db "meter_reading_db"
 
 echo "✓ All databases restored successfully from $BACKUP_DIR"
