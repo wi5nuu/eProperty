@@ -48,6 +48,7 @@ export function Alert({ variant, title, message, onClose }: AlertProps) {
         {onClose && (
           <button
             onClick={onClose}
+            aria-label="Close alert"
             className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"
           >
             <XCircle size={18} />
