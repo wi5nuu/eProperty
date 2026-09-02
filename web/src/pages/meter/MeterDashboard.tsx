@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Droplets, Home, Clock, CheckCircle, AlertTriangle, TrendingUp } from 'lucide-react'
+import toast from 'react-hot-toast'
 import api from '../../lib/api'
 
 interface DashboardData {
@@ -14,12 +15,26 @@ interface DashboardData {
 
 export default function MeterDashboard() {
   const [data, setData] = useState<DashboardData | null>(null)
+  const [error, setError] = useState(false)
 
   useEffect(() => {
     api.get('/meter/dashboard')
       .then(({ data }) => setData(data))
-      .catch(() => {})
+      .catch(() => {
+        setError(true)
+        toast.error('Gagal memuat data dashboard meter')
+      })
   }, [])
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-4">
+        <AlertTriangle size={48} className="text-amber-500" />
+        <p className="text-slate-600 dark:text-slate-300">Gagal memuat data dashboard</p>
+        <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Coba Lagi</button>
+      </div>
+    )
+  }
 
   if (!data) {
     return (

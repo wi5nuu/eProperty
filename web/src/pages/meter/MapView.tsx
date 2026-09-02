@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
-import { Loader2, Home, Droplets } from 'lucide-react'
+import { Loader2, Home, Droplets, AlertTriangle } from 'lucide-react'
+import toast from 'react-hot-toast'
 import api from '../../lib/api'
 import 'leaflet/dist/leaflet.css'
 
@@ -33,17 +34,23 @@ const createIcon = (status: string) => {
 export default function MapView() {
   const [houses, setHouses] = useState<MapHouse[]>([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
   const [filterBlock, setFilterBlock] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
     api.get('/meter/houses/map')
       .then(({ data }) => setHouses(data.data ?? []))
-      .catch(() => {})
+      .catch(() => {
+        setError(true)
+        toast.error('Gagal memuat data peta')
+      })
       .finally(() => setLoading(false))
   }, [])
 
-  const filtered = filterBlock ? houses.filter(h => h.block === filterBlock) : houses
+  const filtered = filterBlock
+    ? houses.filter(h => h.block === filterBlock && h.latitude && h.longitude)
+    : houses.filter(h => h.latitude && h.longitude)
   const blocks = [...new Set(houses.map(h => h.block).filter(Boolean))].sort()
 
   const center: [number, number] = filtered.length > 0
@@ -52,6 +59,16 @@ export default function MapView() {
 
   if (loading) {
     return <div className="flex items-center justify-center py-20"><Loader2 size={32} className="animate-spin text-blue-500" /></div>
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20 gap-4">
+        <AlertTriangle size={48} className="text-amber-500" />
+        <p className="text-slate-600 dark:text-slate-300">Gagal memuat data peta</p>
+        <button onClick={() => window.location.reload()} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">Coba Lagi</button>
+      </div>
+    )
   }
 
   return (

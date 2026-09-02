@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Users, Briefcase, HardHat, UserCog, TrendingUp } from 'lucide-react'
+import toast from 'react-hot-toast'
 import api from '../lib/api'
 
 interface Stats {
@@ -11,6 +12,7 @@ interface Stats {
 
 export default function Dashboard() {
   const [stats, setStats] = useState<Stats>({ customers: 0, suppliers: 0, contractors: 0, employees: 0 })
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const load = async () => {
@@ -27,7 +29,11 @@ export default function Dashboard() {
           contractors: ct.data.data?.length ?? 0,
           employees: e.data.data?.length ?? 0,
         })
-      } catch {}
+      } catch {
+        toast.error('Gagal memuat data dashboard')
+      } finally {
+        setLoading(false)
+      }
     }
     load()
   }, [])
@@ -45,7 +51,12 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Dashboard</h1>
         <p className="text-slate-500 dark:text-slate-400 mt-1">Ringkasan data eProperty</p>
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {loading ? (
+        <div className="flex items-center justify-center py-20">
+          <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((card) => (
           <div key={card.label} className="bg-white dark:bg-slate-800 rounded-2xl p-5 shadow-sm border border-slate-100 dark:border-slate-700">
             <div className="flex items-center justify-between mb-3">
@@ -58,7 +69,8 @@ export default function Dashboard() {
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{card.label}</p>
           </div>
         ))}
-      </div>
+        </div>
+      )}
     </div>
   )
 }
