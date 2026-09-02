@@ -9,6 +9,7 @@ interface Field {
   label: string
   type?: string
   required?: boolean
+  placeholder?: string
 }
 
 interface CrudFormProps {
@@ -54,8 +55,9 @@ export default function CrudForm({ title, endpoint, fields, listPath }: CrudForm
         toast.success('Data berhasil ditambahkan')
       }
       navigate(listPath)
-    } catch {
-      toast.error(isEdit ? 'Gagal memperbarui data' : 'Gagal menambahkan data')
+    } catch (err: any) {
+      const message = err.response?.data?.message || (isEdit ? 'Gagal memperbarui data' : 'Gagal menambahkan data')
+      toast.error(message)
     } finally {
       setLoading(false)
     }
@@ -91,6 +93,7 @@ export default function CrudForm({ title, endpoint, fields, listPath }: CrudForm
             {field.type === 'textarea' ? (
               <textarea
                 required={field.required}
+                placeholder={field.placeholder}
                 value={form[field.name] ?? ''}
                 onChange={(e) => setForm({ ...form, [field.name]: e.target.value })}
                 rows={3}
@@ -100,6 +103,7 @@ export default function CrudForm({ title, endpoint, fields, listPath }: CrudForm
               <input
                 type={field.type ?? 'text'}
                 required={field.required}
+                placeholder={field.placeholder}
                 value={form[field.name] ?? ''}
                 onChange={(e) => setForm({ ...form, [field.name]: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-900 dark:text-white focus:ring-2 focus:ring-primary-500 outline-none transition-all"

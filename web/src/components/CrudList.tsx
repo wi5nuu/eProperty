@@ -38,7 +38,7 @@ export default function CrudList({ title, endpoint, columns, createPath, editPat
   useEffect(() => { load() }, [])
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Yakin ingin menghapus data ini?')) return
+    if (!confirm('Yakin ingin menghapus data ini? Tindakan ini tidak dapat dibatalkan.')) return
     try {
       await api.delete(`${endpoint}/${id}`)
       toast.success('Data berhasil dihapus')
